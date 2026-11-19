@@ -28,4 +28,11 @@ const setCookie = (res, t) => res.setHeader("Set-Cookie", "mgv_session=" + encod
 const clearCookie = (res) => res.setHeader("Set-Cookie", "mgv_session=" + FLAGS + "; Max-Age=0");
 const h = (x) => crypto.createHash("sha256").update(String(x)).digest();
 const safeEq = (a, b) => crypto.timingSafeEqual(h(a), h(b));
-module.exports = { makeToken, isAdmin, setCookie, clearCookie, safeEq };
+const makePayloadToken = (obj, ttl) => {
+  const p = Buffer.from(JSON.stringify({ ...obj, exp: Date.now() + ttl })).toString("base64url");
+  return p + "." + sign(p);
+};
+const userCookie = (req) => readToken(cookies(req).mgv_user);
+const setUserCookie = (res, t) => res.setHeader("Set-Cookie", "mgv_user=" + encodeURIComponent(t) + FLAGS + "; Max-Age=2592000");
+const clearUserCookie = (res) => res.setHeader("Set-Cookie", "mgv_user=" + FLAGS + "; Max-Age=0");
+module.exports = { makeToken, isAdmin, setCookie, clearCookie, safeEq, makePayloadToken, readToken, userCookie, setUserCookie, clearUserCookie };

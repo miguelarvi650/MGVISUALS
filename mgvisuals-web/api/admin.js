@@ -1,6 +1,7 @@
 const db = require("../lib/db");
 const mail = require("../lib/mail");
 const { isAdmin } = require("../lib/auth");
+const U = require("../lib/users");
 const IDRE = /^[a-z0-9-]{4,40}$/i;
 const BLOB = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
 const clip = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
@@ -10,6 +11,7 @@ function cleanCamp(d) {
   const s = ["open", "soon", "done", "closed"].includes(d.s) ? d.s : "open";
   return { n: clip(d.n, 120), d: clip(d.d, 120), s, fase: Math.max(0, Math.min(Number(d.fase) || 0, Math.max(fases.length - 1, 0))), fases,
     pruebas: (Array.isArray(d.pruebas) ? d.pruebas : []).slice(0, 60).map((x) => clip(x, 60)).filter(Boolean),
+    cats: [...new Set((Array.isArray(d.cats) ? d.cats : []).filter((x) => U.CATS.includes(x)))],
     abre: s === "soon" && Number(d.abre) > 0 ? Number(d.abre) : 0, ts: Number(d.ts) || Date.now() };
 }
 module.exports = async (req, res) => {
@@ -25,8 +27,19 @@ module.exports = async (req, res) => {
         if (!IDRE.test(id)) return bad("Identificador no válido");
         const c = cleanCamp(b.data || {});
         if (!c.n) return bad("Pon un nombre al campeonato.");
+        const prev = await db.get("camps", id);
+        if (prev && prev.avisado) c.avisado = prev.avisado;
+        let avisados = null, avisoError = false;
+        if (b.data && b.data.avisar && c.cats.length && (c.s === "soon" || c.s === "open")) {
+          try {
+            const to = (await db.all("users")).filter((u) => u.verified && u.avisos && c.cats.includes(u.cat)).map((u) => u.id);
+            const site = process.env.SITE_URL || "https://" + req.headers.host;
+            for (let i = 0; i < to.length; i += 40) await mail.nuevoCampeonato(to.slice(i, i + 40), c, site);
+            avisados = to.length; if (to.length) c.avisado = Date.now();
+          } catch (e) { console.error("aviso campeonato", e); avisoError = true; }
+        }
         await db.put("camps", id, c);
-        return res.status(200).json({ ok: true });
+        return res.status(200).json({ ok: true, avisados, avisoError });
       }
       case "camp:delete":
         if (!IDRE.test(id)) return bad("Identificador no válido");

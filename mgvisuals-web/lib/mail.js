@@ -5,11 +5,11 @@ const T = () => tr || (tr = nodemailer.createTransport({
   auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_APP_PASSWORD },
 }));
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-async function send(to, subject, lines) {
+async function send(to, subject, lines, bcc) {
   const html = '<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#0a0a0a">'
     + '<h2 style="font-style:italic;text-transform:uppercase;border-bottom:3px solid #0a0a0a;padding-bottom:8px">MG Visuals</h2>'
-    + lines.map((l) => (l === "" ? "<br>" : '<p style="margin:6px 0">' + esc(l) + "</p>")).join("") + "</div>";
-  await T().sendMail({ from: '"MG Visuals" <' + process.env.GMAIL_USER + ">", to, subject, text: lines.join("\n"), html });
+    + lines.map((l) => (l === "" ? "<br>" : /^https?:\/\//.test(l) ? '<p style="margin:6px 0"><a href="' + esc(l) + '">' + esc(l) + "</a></p>" : '<p style="margin:6px 0">' + esc(l) + "</p>")).join("") + "</div>";
+  await T().sendMail({ from: '"MG Visuals" <' + process.env.GMAIL_USER + ">", to, bcc, subject, text: lines.join("\n"), html });
 }
 const firma = (aj) => ["", "MG Visuals" + (aj.email ? " · " + aj.email : "") + (aj.ig ? " · @" + aj.ig : "")];
 const pagoLines = (aj) => (aj.pago ? ["", "Cómo pagar:"].concat(String(aj.pago).split("\n")) : []);
@@ -30,3 +30,15 @@ exports.confirmada = (r, aj) => send(r.email, "Reserva confirmada " + r.code,
 exports.aviso = (r) => send(process.env.ADMIN_NOTIFY || process.env.GMAIL_USER,
   (r.tipo === "prereserva" ? "Nueva prereserva " : "Nueva reserva ") + r.code + " - " + r.camp,
   resumen(r).concat(["Nombre: " + r.nombre, "Sexo: " + r.sexo, "Email: " + r.email, "Teléfono: " + (r.tel || "-"), "Instagram: " + (r.ig || "-")]));
+
+exports.verificar = (u, link) => send(u.email, "Confirma tu cuenta de MG Visuals",
+  ["Hola " + u.nombre + ",", "", "Para activar tu cuenta y elegir tu contraseña, abre este enlace (válido 48 horas):", link, "", "Si no has sido tú, ignora este correo.", "", "MG Visuals"]);
+exports.recuperar = (u, link) => send(u.email, "Restablecer tu contraseña de MG Visuals",
+  ["Hola " + u.nombre + ",", "", "Para elegir una contraseña nueva, abre este enlace (válido 1 hora):", link, "", "Si no lo has pedido tú, ignora este correo.", "", "MG Visuals"]);
+exports.nuevoCampeonato = (bcc, c, base) => send(process.env.GMAIL_USER, "Nuevo campeonato: " + c.n,
+  ["Hola,", "", "Hay un nuevo campeonato para tu categoría (" + (c.cats || []).join(", ") + "):", "", c.n + (c.d ? " · " + c.d : ""), ""].concat(
+    c.s === "soon"
+      ? [c.abre ? "Las reservas se abren el " + fmt(c.abre) + "." : "Pronto abriremos las reservas.",
+         "Ya puedes hacer la prereserva (sin pago)" + (c.abre ? " y entrarás 1 hora antes, desde las " + fmt(c.abre - 36e5) + "." : ".")]
+      : ["Las reservas ya están abiertas."],
+    ["", "Entra aquí:", base + "/#campeonatos", "", "Recibes este aviso porque activaste los avisos de tu categoría. Puedes desactivarlos en tu cuenta:", base + "/cuenta", "", "MG Visuals"]), bcc);
