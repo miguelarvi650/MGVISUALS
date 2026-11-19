@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/cuenta", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/campeonato/:id", "destination": "/index.html" }
+  ]
+}
