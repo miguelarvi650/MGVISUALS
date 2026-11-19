@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MGVisuals — Fotografía deportiva</title>
+<style>
+:root{--bg:#fff;--surface:#f2f2f2;--text:#0a0a0a;--muted:#5e5e5e;--line:#d6d6d6;--accent:#0a0a0a;--accent-text:#fff;--ok:#0a0a0a;--warn:#5e5e5e;--bad:#b42318;--info:#0a0a0a;--serif:"Arial Black","Segoe UI Black","Helvetica Neue",Impact,Arial,sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0a0a0a;--surface:#161616;--text:#f5f5f5;--muted:#9c9c9c;--line:#2c2c2c;--accent:#f5f5f5;--accent-text:#0a0a0a;--ok:#f5f5f5;--warn:#9c9c9c;--bad:#ff8a7a;--info:#f5f5f5;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0a0a0a;--surface:#161616;--text:#f5f5f5;--muted:#9c9c9c;--line:#2c2c2c;--accent:#f5f5f5;--accent-text:#0a0a0a;--ok:#f5f5f5;--warn:#9c9c9c;--bad:#ff8a7a;--info:#f5f5f5;color-scheme:dark}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 64px);scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;line-height:1.55}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:2px solid var(--text)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{font-family:var(--serif);font-size:22px;text-decoration:none}
+.logo b{font-style:italic;font-weight:400;color:var(--accent)}
+nav a{font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;margin-left:20px;color:var(--muted)}
+nav a:hover{color:var(--text)}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center;padding-top:64px;padding-bottom:56px}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(40px,7vw,76px);line-height:1.02;margin:12px 0 16px;letter-spacing:-.02em}
+.hero h1 em{color:var(--accent)}
+.hero .lead{color:var(--muted);font-size:18px;margin:0 0 22px;max-width:480px}
+.hero h2{font-size:clamp(20px,3vw,26px);margin:14px 0 2px}
+.hero svg{width:100%;max-width:330px;justify-self:center;color:var(--accent)}
+@media (max-width:760px){.hero{grid-template-columns:1fr;padding-top:34px}.hero svg{max-width:150px;order:-1;justify-self:start}}
+.eyebrow{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 4px}
+.btn{display:inline-block;background:var(--accent);color:var(--accent-text);font-weight:600;border:0;border-radius:4px;padding:13px 24px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;font-family:inherit;margin:0 6px 6px 0}
+.btn:hover{filter:brightness(1.1)}
+.btn.ghost{background:transparent;color:var(--text);border:1.5px solid var(--text)}
+section{padding:56px 0;border-top:1px solid var(--line)}
+h2{font-family:var(--serif);font-weight:400;font-size:clamp(28px,5vw,42px);margin:4px 0 10px;line-height:1.1}
+h2 em{color:var(--accent);font-style:italic}
+.sub{color:var(--muted);margin:0 0 24px}
+.car-head{display:flex;align-items:end;justify-content:space-between;gap:12px;margin-bottom:22px}
+.arrows{display:none}
+.track{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--line);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:8px}
+.card.open{border-top-color:var(--accent)}
+.card.soon{border-top-color:var(--warn)}
+.card.done{border-top-color:var(--info)}
+.card.closed{border-top-color:var(--bad);opacity:.8}
+.card.sel{box-shadow:0 0 0 2px var(--accent)}
+.tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:inline-flex;align-items:center;gap:6px}
+.tag.open,.tag.done{color:var(--ok)}.tag.soon{color:var(--warn)}.tag.closed{color:var(--bad)}
+.card h3{font-family:var(--serif);font-weight:400;font-size:20px;margin:2px 0 0;line-height:1.2}
+.meta{font-size:13px;color:var(--muted);margin:0}
+.cdb{margin:4px 0 8px;font-size:14px;color:var(--muted)}
+.cdb b{font-family:var(--serif);font-size:24px;font-weight:400;font-variant-numeric:tabular-nums;color:var(--accent)}
+.card .links{margin-top:auto;padding-top:10px;display:flex;flex-direction:column;gap:6px}
+.card .links a{font-size:14px;font-weight:600;color:var(--accent);text-decoration:none}
+.card .links a:hover{text-decoration:underline}
+.center{text-align:center;margin-top:18px}
+.badge{font-size:12px;background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:4px 10px;color:var(--muted)}
+.group{margin:28px 0 8px}
+.group h3{font-family:var(--serif);font-weight:400;font-size:22px;margin:0 0 2px}
+.stock{color:var(--muted);font-size:14px;margin:0 0 12px}
+.stock b{color:var(--accent)}
+.phases{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--surface)}
+.phase{padding:16px;border-right:1px solid var(--line)}
+.phase:last-child{border-right:0}
+.phase.now{background:var(--accent);color:var(--accent-text)}
+.phase.now .t{color:inherit}
+.phase.sold{opacity:.5}
+.phase .t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px;margin-bottom:10px}
+.row{display:flex;justify-content:space-between;padding:5px 0;border-top:1px dashed var(--line);font-size:15px}
+.phase.now .row{border-top-color:color-mix(in srgb,currentColor 35%,transparent)}
+.row:first-of-type{border-top:0}
+.row b{font-variant-numeric:tabular-nums}
+.sold .row b{text-decoration:line-through}
+form{background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:4px;padding:26px;max-width:680px;margin:0 auto}
+.booking{display:flex;gap:12px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:12px 14px;margin-bottom:18px}
+.booking small{display:block;color:var(--muted);font-size:12px}
+label.f{display:block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin:16px 0 6px}
+input[type=text],input[type=email],input[type=tel],input[type=datetime-local],input[type=password],select,textarea{width:100%;padding:12px 13px;border-radius:4px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-size:16px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:1px}
+.packs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.pack{position:relative}
+.pack input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.pack div{border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:12px;text-align:center;pointer-events:none}
+.pack div strong{display:block;font-family:var(--serif);font-size:24px;font-weight:400}
+.pack div span{font-size:13px;color:var(--muted)}
+.pack div b{display:block;margin-top:2px}
+.pack input:checked+div{border:2px solid var(--accent);background:var(--surface)}
+.pack input:focus-visible+div{outline:2px solid var(--accent)}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--muted);margin:18px 0}
+.check input{margin-top:3px;width:18px;height:18px;flex:none}
+.check a{color:var(--info)}
+form .btn{width:100%;padding:15px;margin:0}
+.note{font-size:13px;color:var(--muted);text-align:center;margin:12px 0 0}
+#ok{display:none;margin-top:14px;padding:14px;border-radius:4px;border:1px solid var(--ok);color:var(--ok);font-weight:600;text-align:center}
+.err{color:var(--bad);font-size:13px;margin-top:10px;display:none}
+footer{background:var(--surface);border-top:2px solid var(--text);color:var(--text);padding:28px 0;font-size:14px;text-align:center;margin-top:24px}
+footer a{color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px;margin-top:18px}
+figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+figure img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:var(--bg)}
+figcaption{font-size:12px;color:var(--muted);padding:8px 10px}
+.del{margin:0 10px 10px;border:1px solid var(--bad);color:var(--bad);background:transparent;border-radius:4px;padding:6px 10px;cursor:pointer;font:inherit;font-size:13px}
+.del.dl{border-color:var(--line);color:var(--text)}
+.adm{max-width:680px;margin:0 auto;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--accent);border-radius:4px;padding:24px}
+.adm input[type=file]{width:100%;padding:12px;border:1px dashed var(--line);border-radius:4px;background:var(--bg);color:var(--text);font:inherit}
+.adm .btn{width:100%;margin-top:16px}
+.adm .row{align-items:center;gap:8px;flex-wrap:wrap}
+.fbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fbar select{width:auto;min-width:220px}
+.fr{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.fr input{padding:9px;font-size:14px}
+.prs{display:flex;flex-wrap:wrap;gap:8px}
+.prs label{border:1px solid var(--line);background:var(--bg);border-radius:4px;padding:8px 14px;font-size:14px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.prs input{accent-color:var(--accent)}
+h1,h2,h3{font-family:var(--serif);font-weight:900;font-style:italic;text-transform:uppercase;letter-spacing:-.01em}
+.hero h1{font-size:clamp(34px,7vw,68px);line-height:1}
+h2{font-size:clamp(24px,4.5vw,36px)}
+.card h3{font-size:17px}.group h3{font-size:18px;font-weight:900}
+h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .14em}
+.hero{grid-template-columns:1fr}
+@media (max-width:640px){header .wrap{height:auto;flex-wrap:wrap;padding-top:10px;padding-bottom:8px;gap:6px}nav{width:100%;display:flex;justify-content:space-between}nav a{margin:0;font-size:11px;letter-spacing:.06em}html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 96px)}}
+.hero h1,.card h3,.group h3{font-weight:900;font-style:italic;text-transform:uppercase}
+.hero h1 em{color:var(--bg)}
+.pack div strong,.cdb b{font-family:var(--serif);font-weight:900;font-style:italic}
+.card,.phases,form,.booking,input,select,textarea,.pack div,.prs label,figure,.adm,.badge,#ok,.btn,.del{border-radius:0}
+.btn{font-weight:800;font-style:italic}
+.card.done{border-top-color:var(--muted)}
+.card.closed{border-top-color:var(--line);opacity:.6}
+.tag.closed{color:var(--muted)}
+.logo img{height:30px;width:auto;display:block}
+.flogo{margin-bottom:12px}.flogo img{height:26px;width:auto}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .logo img,:root:not([data-theme="light"]) .flogo img{filter:invert(1)}}
+:root[data-theme="dark"] .logo img,:root[data-theme="dark"] .flogo img{filter:invert(1)}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<a class="logo" href="#"><img id="lg" alt="MG Visuals" src="data:image/png;base64,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"></a>
+<nav><a href="#campeonatos">Calendario</a><a href="#precios">Tarifas</a><a href="#reservas">Reserva</a><a href="#cuenta" id="acclink">Mi cuenta</a></nav>
+</div></header>
+
+<main>
+<div class="wrap hero">
+<div>
+<p class="eyebrow">Estudio de fotografía deportiva</p>
+<h1>Cada <em>meta</em> merece su foto.</h1>
+<p class="lead">Tus mejores momentos en pista, en alta calidad y listos para descargar.</p>
+<div class="tag open" id="ht"></div>
+<h2 id="hn"></h2>
+<p class="meta" id="hd" style="margin-bottom:6px"></p>
+<div id="hcd" style="margin-bottom:16px"></div>
+<a class="btn" href="#reservas">Reservar mis fotos</a><a class="btn ghost" href="#galeria">Ver galería</a>
+</div>
+</div>
+
+<section id="campeonatos"><div class="wrap">
+<div class="car-head">
+<div><p class="eyebrow">Calendario</p><h2 style="margin:0">Elige tu campeonato</h2></div>
+<div class="arrows"><button type="button" id="prev" aria-label="Anterior">‹</button><button type="button" id="next" aria-label="Siguiente">›</button></div>
+</div>
+<div class="track" id="track"></div>
+</div></section>
+
+<section id="precios"><div class="wrap"><p class="eyebrow">Tarifas</p><h2>Reserva pronto, <em>paga menos</em></h2><p class="sub" id="ptitle"></p><div id="pbox"></div><div class="center"><a class="btn" href="#reservas">Reservar mis fotos →</a></div></div></section>
+
+<section id="reservas"><div class="wrap">
+<div class="center" style="margin:0 0 24px"><p class="eyebrow">Último paso</p>
+<h2>Tu reserva</h2><p class="sub" style="margin:0">Indica los datos del atleta y elige sus pruebas.</p></div>
+<form id="f" novalidate>
+<div class="booking"><span style="font-size:26px">🏆</span><div><small>Estás reservando para</small><strong id="bn"></strong></div></div>
+<label class="f" for="n">Nombre completo*</label><input type="text" id="n" autocomplete="name" required>
+<label class="f" for="s">Sexo*</label>
+<select id="s" required><option value="">Sexo</option><option>Masculino (M)</option><option>Femenino (W)</option></select>
+<label class="f" for="e">Email*</label><input type="email" id="e" autocomplete="email" required>
+<label class="f" for="t">Teléfono</label><input type="tel" id="t" autocomplete="tel">
+<label class="f" for="i">Instagram</label><input type="text" id="i" placeholder="@usuario">
+<label class="f" id="pkl">Pack de fotos</label>
+<div class="packs" id="packs"></div>
+<div id="prw" style="display:none"><label class="f">Elige tus pruebas* <span id="prn" class="note"></span></label><div id="pr" class="prs"></div><p class="note" id="ptot" style="text-align:left;font-weight:700;color:var(--text)"></p></div>
+<label class="check"><input type="checkbox" id="sv"><span>Guardar mis datos y esta reserva en mi cuenta (en este dispositivo).</span></label>
+<label class="check"><input type="checkbox" id="c"><span>He leído y acepto los <a href="#reservas">Términos y Condiciones</a> y la <a href="#reservas">Política de Privacidad</a>, incluyendo el uso de mis datos para la gestión del servicio y el envío de comunicaciones relacionadas con MGVisuals.</span></label>
+<button class="btn" type="submit" id="fbtn">Confirmar reserva</button>
+<p class="err" id="err" role="alert"></p>
+<p class="note">Al confirmar se descargará tu justificante de reserva en PDF. El pago se completa siguiendo las instrucciones que verás tras reservar.</p>
+<div id="ok" role="status"></div>
+</form>
+</div></section>
+
+<section id="galeria"><div class="wrap">
+<p class="eyebrow">Tus fotos</p>
+<h2>Galería</h2>
+<div class="fbar"><label for="gf" class="sub" style="margin:0">Filtrar por campeonato</label><select id="gf"><option value="">Todos</option></select></div>
+<div class="grid" id="grid"></div>
+<p class="sub" id="gmsg" style="margin-top:16px"></p>
+</div></section>
+
+<section id="cuenta" style="display:none"><div class="wrap"><div class="center" style="margin:0 0 20px"><p class="eyebrow">Mi cuenta</p><h2>Tus datos y reservas</h2></div><div class="adm" id="accbox"></div></div></section>
+
+<section id="admin" style="display:none"><div class="wrap">
+<div class="center" style="margin:0 0 20px"><p class="eyebrow">Zona privada</p><h2>Acceso del creador</h2></div>
+<div class="adm" id="admbox"></div>
+</div></section>
+
+</main>
+
+<footer><div class="wrap"><div class="flogo"><img id="flg" alt="MG Visuals"></div>© 2026 MGVisuals<br><span id="fcw" style="display:none">Dudas: <span id="fc"></span><a id="fig" href="#"></a> · </span><a href="#admin" id="adminlink">Acceso creador</a></div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="/shim.js"></script>
+<script>
+var B="ext:";
+var L={open:"● Reservas abiertas · Activo",soon:"● Reservas abren pronto",done:"✓ Fotos disponibles · Celebrado",closed:"● Cerrado · SOLD OUT"};
+var C=[];
+var tr=document.getElementById("track");
+C.forEach(function(c){
+var a=document.createElement("article");a.className="card "+c.s;
+var h='<span class="tag '+c.s+'">'+L[c.s]+'</span><h3></h3><p class="meta"></p>';
+if(c.l.length){h+='<div class="links">'+c.l.map(function(x){return '<a href="'+(x[1].indexOf(B)===0?'#galeria':x[1])+'">'+x[0]+'</a>'}).join("")+'</div>'}
+a.innerHTML=h;a.querySelector("h3").textContent=c.n;a.querySelector(".meta").textContent=c.d||"\u00a0";
+tr.appendChild(a)});
+document.getElementById("prev").onclick=function(){tr.scrollBy({left:-310,behavior:"smooth"})};
+document.getElementById("next").onclick=function(){tr.scrollBy({left:310,behavior:"smooth"})};
+
+(function(){
+var db=null,assets=null,dl=null,admin=false,cc=null,cf=null,champs=[],photos=[],selC=null,ed=null,aj={},reservas=[],lastSig="",delPend=null;
+var $=function(i){return document.getElementById(i)};
+var tr=$("track"),gm=$("gmsg"),grid=$("grid"),gf=$("gf"),box=$("admbox");
+var ST={open:"Reservas abiertas",soon:"Próximamente",done:"Fotos disponibles",closed:"Agotado"};
+var K=[["p1","1 prueba €"],["p2","2 pruebas €"],["p3","3 pruebas €"],["pc","Combinadas €"],["q1","Plazas indiv."],["qc","Plazas comb."]];
+function E(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function msg(t){gm.textContent=t}
+function cur(c){return c&&c.fases&&c.fases[c.fase||0]||null}
+function pick(){
+var id=selC&&selC.id;selC=null;
+champs.forEach(function(c){if(c.id===id)selC=c});
+["open","soon"].forEach(function(st){if(!selC)champs.forEach(function(c){if(!selC&&c.es===st)selC=c})})}
+function drawHero(){
+$("hn").textContent=selC?selC.n:"Próximamente";
+$("hd").textContent=selC?(selC.d||""):"Nuevos campeonatos en breve";
+$("ht").textContent=selC?(ST[selC.es]||"")+(selC.es==="soon"&&selC.abre?" · abre el "+fmt(selC.abre):""):""}
+function drawTrack(){
+tr.textContent="";
+if(!champs.length){tr.appendChild(E("p","sub","Próximamente: nuevos campeonatos."));return}
+champs.forEach(function(c){
+var a=E("article","card "+c.es+(selC&&selC.id===c.id?" sel":"")),x=null;
+a.appendChild(E("span","tag "+c.es,(ST[c.es]||"")+(c.early?" · acceso anticipado":"")));a.appendChild(E("h3","",c.n));a.appendChild(E("p","meta",c.d||"\u00a0"));if(c.es==="soon"&&c.abre){a.appendChild(E("p","meta","Abre el "+fmt(c.abre)));a.appendChild(cdBox(c.abre,"Faltan "))}else if(c.early){a.appendChild(cdBox(c.abre,"Apertura general en "))}
+if(c.es==="open"||c.es==="soon"){x=E("a","",c.es==="open"?"Reservar mis fotos →":"Prereservar →");x.href="#reservas";x.onclick=function(){selC=c;drawAll()}}
+else if(c.es==="done"){x=E("a","","Ver y descargar mis fotos →");x.href="#galeria";x.onclick=function(){gf.value=c.n;drawGrid()}}
+if(x){var l=E("div","links");l.appendChild(x);a.appendChild(l)}
+tr.appendChild(a)})}
+function drawPacks(){
+var pk=$("packs"),f=cur(selC);pk.textContent="";
+$("bn").textContent=selC?selC.n:"Sin campeonato abierto";
+if(!f){pk.appendChild(E("p","sub","Sin precios disponibles."));drawPruebas();return}
+[["1","Prueba","p1"],["2","Pruebas","p2"],["3","Pruebas","p3"],["C","Combinadas","pc"]].forEach(function(x){
+var v=f[x[2]];if(v===""||v==null)return;
+var l=E("label","pack"),r=E("input"),d=E("div");r.type="radio";r.name="p";r.dataset.k=x[2];r.value=x[0]+" "+x[1]+" · "+v+"€";
+d.appendChild(E("strong","",x[0]));d.appendChild(E("span","",x[1]));d.appendChild(E("b","",v+"€"));
+l.appendChild(r);l.appendChild(d);pk.appendChild(l)});
+var r0=pk.querySelector("input");if(r0)r0.checked=true;drawPruebas()}
+function drawPricing(){
+var c=selC,pb=$("pbox");pb.textContent="";
+if(!c||!(c.fases||[]).length){$("ptitle").textContent="Los precios se publicarán pronto.";drawPacks();return}
+$("ptitle").textContent="🏆 "+c.n+" · El precio sube en cada fase y las plazas son limitadas.";
+var n=c.fase||0;
+[["Pruebas individuales",["p1","p2","p3"],["1 prueba","2 pruebas","3 pruebas"],"q1"],["Pruebas combinadas",["pc"],["Combinadas"],"qc"]].forEach(function(g){
+var gr=E("div","group"),q=c.fases[n]?c.fases[n][g[3]]:"",st=E("p","stock","Quedan ");
+gr.appendChild(E("h3","",g[0]));st.appendChild(E("b","",q===""||q==null?"—":q));st.appendChild(document.createTextNode(" plazas a este precio"));gr.appendChild(st);
+var ph=E("div","phases");
+c.fases.forEach(function(f,i){
+var p=E("div","phase"+(i===n?" now":i<n?" sold":"")),t=E("div","t");
+t.appendChild(E("span","","Fase "+(i+1)));t.appendChild(E("span","",i===n?"Precio actual":i<n?"Agotada":"Próximamente"));p.appendChild(t);
+g[1].forEach(function(k,j){var r=E("div","row");r.appendChild(E("span","",g[2][j]));r.appendChild(E("b","",f[k]===""||f[k]==null?"—":f[k]+"€"));p.appendChild(r)});
+ph.appendChild(p)});
+gr.appendChild(ph);pb.appendChild(gr)});
+drawPacks()}
+async function save(d){
+try{location.href="/api/descarga?u="+encodeURIComponent(d.url)+"&n="+encodeURIComponent(d.name||"foto.jpg")}
+catch(e){msg("No se pudo descargar la foto.")}}
+async function remove(d){
+try{await cf.doc(d.id).delete();if(assets&&d.assetId){await assets.delete(d.assetId)}}
+catch(e){msg("No se pudo eliminar la foto.")}}
+function drawGrid(){
+var v=gf.value;grid.textContent="";
+if(!db)return;
+var list=photos.filter(function(d){return !v||d.champ===v});
+msg(list.length?"":"Todavía no hay fotos subidas en este campeonato.");
+list.forEach(function(d){
+var f=E("figure"),a=E("a"),im=new Image();
+a.href=d.url;a.target="_blank";a.rel="noopener";im.src=d.url;im.loading="lazy";im.alt=d.name||"Foto";
+a.appendChild(im);f.appendChild(a);f.appendChild(E("figcaption","",d.champ||""));
+var b=E("button","del dl","Descargar");b.type="button";b.onclick=function(){save(d)};f.appendChild(b);
+if(admin){var x=E("button","del","Eliminar");x.type="button";
+x.onclick=function(){if(!x.dataset.s){x.dataset.s="1";x.textContent="¿Seguro? Pulsa otra vez";return}remove(d)};f.appendChild(x)}
+grid.appendChild(f)})}
+function maxP(){var f=cur(selC)||{},m=0;["p1","p2","p3"].forEach(function(k,i){if(f[k]!==""&&f[k]!=null)m=i+1});return m}
+function sel(){
+var q=document.querySelectorAll("#pr input:not([data-c]):checked"),cb=document.querySelector("#pr input[data-c]:checked"),f=cur(selC)||{};
+if(cb)return{ok:true,pack:"Combinadas · "+f.pc+"€",pruebas:[]};
+var n=q.length;if(!n)return{ok:false};
+var v=f["p"+n];if(v===""||v==null)return{ok:false};
+return{ok:true,pack:n+(n>1?" pruebas":" prueba")+" · "+v+"€",pruebas:Array.prototype.map.call(q,function(x){return x.value})}}
+function calcTot(){
+if(selC&&selC.es==="soon"){$("ptot").textContent="Prereserva sin pago: te avisaremos al abrir y podrás reservar 1 hora antes.";return}
+var r=sel();$("ptot").textContent=r.ok?"Total: "+r.pack.split(" · ")[1]:"Elige tus pruebas para ver el precio."}
+function drawPruebas(){
+var w=$("prw"),pr=$("pr"),list=selC&&selC.pruebas||[],pk=$("packs"),pl=$("pkl"),f=cur(selC),soon=!!selC&&selC.es==="soon";pr.textContent="";
+if(soon&&!list.length){w.style.display="none";pk.style.display=pl.style.display="none";return}
+if(!list.length||(!f&&!soon)){w.style.display="none";pk.style.display=pl.style.display="";return}
+pk.style.display=pl.style.display="none";w.style.display="block";
+$("prn").textContent=soon?"(las que te interesan)":"(máx. "+maxP()+")";
+list.forEach(function(p){var l=E("label"),i=E("input");i.type="checkbox";i.value=p;l.appendChild(i);l.appendChild(document.createTextNode(p));pr.appendChild(l)});
+if(!soon&&f.pc!==""&&f.pc!=null){var l=E("label"),i=E("input");i.type="checkbox";i.value="Combinadas";i.dataset.c="1";l.appendChild(i);l.appendChild(document.createTextNode("Combinadas ("+f.pc+"€)"));pr.appendChild(l)}
+calcTot()}
+function fillRC(){}
+function drawFooter(){
+var w=$("fcw"),fc=$("fc"),fg=$("fig");fc.textContent="";fg.textContent="";
+if(aj.email){var a=E("a","",aj.email);a.href="mailto:"+aj.email;fc.appendChild(a);if(aj.ig)fc.appendChild(document.createTextNode(" · "))}
+if(aj.ig){fg.textContent="@"+aj.ig;fg.href="https://instagram.com/"+encodeURIComponent(aj.ig)}
+w.style.display=(aj.email||aj.ig)?"inline":"none"}
+async function pdf(r){
+if(!dl)return;
+var J=window.jspdf&&window.jspdf.jsPDF;
+try{
+var L1=function(x){return String(x).replace(/€/g," EUR").replace(/[—–·]/g,"-").replace(/[^\x00-\xFF]/g,"")};
+var rows=[["Codigo",r.code],["Campeonato",r.camp],["Fecha y lugar",r.fecha],["Nombre",r.nombre],["Sexo",r.sexo],["Email",r.email],["Telefono",r.tel],["Instagram",r.ig],["Pack",r.pack],["Pruebas",r.pruebas.length?r.pruebas.join(", "):""],["Estado",r.tipo==="prereserva"?"Prereserva - sin pago":"Pendiente de pago"],["Fecha de reserva",new Date(r.ts).toLocaleString("es-ES")]].filter(function(x){return x[1]});
+if(J){var d=new J(),y=22;try{d.addImage($("lg").src,"PNG",20,14,60,60*116/539);y=40}catch(e){}d.setFontSize(20);d.text("MGVisuals - "+(r.tipo==="prereserva"?"Prereserva":"Reserva")+" de fotos",20,y);y+=12;d.setFontSize(12);
+rows.forEach(function(x){var t=d.splitTextToSize(L1(x[0]+": "+x[1]),170);d.text(t,20,y);y+=7*t.length});
+if(aj.pago){y+=6;d.text(d.splitTextToSize(L1("Pago: "+aj.pago),170),20,y)}
+await dl.save({filename:"reserva-"+r.code+".pdf",data:d.output("blob")})}
+else{var tx="MGVisuals - "+(r.tipo==="prereserva"?"Prereserva":"Reserva")+" de fotos\n\n"+rows.map(function(x){return x[0]+": "+x[1]}).join("\n")+(aj.pago?"\n\nPago: "+aj.pago:"");
+await dl.save({filename:"reserva-"+r.code+".txt",data:tx})}
+}catch(e){}}
+function showRes(r){
+var ok=$("ok");ok.textContent="";
+ok.appendChild(E("div","",(r.tipo==="prereserva"?"Prereserva registrada":"Reserva registrada")+" · Código "+r.code));
+var d=E("div","note","Campeonato: "+r.camp+" · "+r.pack+(r.pruebas.length?" · Pruebas: "+r.pruebas.join(", "):"")+(r.tipo==="prereserva"?". Sin pago ahora."+(r.abre?" Podrás reservar desde "+fmt(r.abre-3600000)+" (1 hora antes de la apertura, el "+fmt(r.abre)+"), desde este mismo dispositivo.":" Te avisaremos cuando abran las reservas."):". Estado: pendiente de pago."));
+d.style.color="var(--text)";ok.appendChild(d);
+if(aj.pago&&r.tipo!=="prereserva"){var p=E("div","note","Pago: "+aj.pago);p.style.color="var(--text)";p.style.whiteSpace="pre-wrap";ok.appendChild(p)}
+var b=E("button","btn","Descargar justificante (PDF)");b.type="button";b.style.marginTop="12px";b.onclick=function(){pdf(r)};ok.appendChild(b);
+var em=E("div","note",r.emailOk===false?"No hemos podido enviar el correo de confirmación. Guarda tu justificante.":"Te hemos enviado un correo a "+r.email+".");em.style.color="var(--text)";ok.appendChild(em);
+ok.style.display="block";ok.scrollIntoView({behavior:"smooth",block:"center"});pdf(r)}
+function drawRes(){
+var l=$("rlist");if(!l)return;l.textContent="";fillRF();
+var L=filtered();$("rcount").textContent=reservas.length?L.length+" de "+reservas.length+" reservas":"";
+if(!reservas.length){l.appendChild(E("p","note","Todavía no hay reservas."));return}
+if(!L.length){l.appendChild(E("p","note","Ninguna reserva coincide con el filtro."));return}
+L.forEach(function(r){
+var row=E("div","row"),w=E("span"),a=E("button","del dl",r.estado==="pagada"?"Marcar pendiente":"Marcar pagada"),x=E("button","del","Eliminar");
+a.type=x.type="button";a.style.margin=x.style.margin="0 0 0 6px";
+a.onclick=function(){db.collection("reservas").doc(r.id).update({estado:r.estado==="pagada"?"pendiente":"pagada"}).then(function(x){$("rcount").textContent=r.estado==="pagada"?"Reserva marcada como pendiente.":(x&&x.emailOk===false?"Marcada como pagada, pero no se pudo enviar el correo.":"Reserva pagada: correo de confirmación enviado a "+r.email+".")}).catch(function(e){$("rcount").textContent="No se pudo actualizar: "+e.message})};
+x.onclick=function(){if(!x.dataset.s){x.dataset.s="1";x.textContent="¿Seguro?";return}db.collection("reservas").doc(r.id).delete().catch(function(){})};
+row.appendChild(E("span","",r.code+" · "+r.nombre+" · "+r.camp+" · "+r.pack+(r.pruebas&&r.pruebas.length?" ("+r.pruebas.join(", ")+")":"")+" · "+r.estado));
+w.appendChild(a);w.appendChild(x);row.appendChild(w);l.appendChild(row)})}
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function acc(){return lsGet("mgv_acc",null)}
+function hasPre(id){return lsGet("mgv_pre",[]).indexOf(id)>=0}
+function markPre(id){var a=lsGet("mgv_pre",[]);if(a.indexOf(id)<0){a.push(id);lsSet("mgv_pre",a)}}
+function fmt(ms){return new Date(ms).toLocaleString("es-ES",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"})}
+function toLocal(ms){var d=new Date(ms-new Date(ms).getTimezoneOffset()*60000);return d.toISOString().slice(0,16)}
+function togAb(){var w=$("abw");if(w)w.style.display=$("cs").value==="soon"?"block":"none"}
+function stOf(c){var n=Date.now();
+if(c.s!=="soon"||!c.abre)return c.s;
+if(n>=c.abre)return "open";
+if(n>=c.abre-3600000&&hasPre(c.id))return "open";
+return "soon"}
+function applyEff(){var g="";champs.forEach(function(c){c.es=stOf(c);c.early=c.s==="soon"&&!!c.abre&&c.es==="open"&&Date.now()<c.abre;g+=c.es});return g}
+function fillAcc(){var a=acc();if(!a||!a.p)return;var p=a.p;$("n").value=p.n||"";$("s").value=p.s||"";$("e").value=p.e||"";$("t").value=p.t||"";$("i").value=p.i||"";$("sv").checked=true}
+function renderAcc(){
+var b=$("accbox"),a=acc();b.textContent="";
+var n=E("p","note","Tu cuenta se guarda solo en este navegador y dispositivo: no tiene contraseña ni se sincroniza con otros dispositivos. Puedes reservar sin cuenta.");n.style.textAlign="left";b.appendChild(n);
+var f=E("div");
+f.innerHTML='<label class="f" for="an">Nombre</label><input type="text" id="an"><label class="f" for="as">Sexo</label><select id="as"><option value="">Sexo</option><option>Masculino (M)</option><option>Femenino (W)</option></select><label class="f" for="ae2">Email</label><input type="email" id="ae2"><label class="f" for="at">Teléfono</label><input type="tel" id="at"><label class="f" for="ai2">Instagram</label><input type="text" id="ai2"><button type="button" class="btn" id="asave"></button><p class="note" id="amsg"></p>';
+b.appendChild(f);
+var p=a&&a.p||{};
+$("an").value=p.n||"";$("as").value=p.s||"";$("ae2").value=p.e||"";$("at").value=p.t||"";$("ai2").value=p.i||"";
+$("asave").textContent=a?"Guardar cambios":"Crear cuenta";
+$("asave").onclick=function(){
+var q={n:$("an").value.trim(),s:$("as").value,e:$("ae2").value.trim(),t:$("at").value.trim(),i:$("ai2").value.trim()};
+if(!q.n||!/^\S+@\S+\.\S+$/.test(q.e)){$("amsg").textContent="Pon tu nombre y un email válido.";return}
+var z=acc()||{r:[]};z.p=q;lsSet("mgv_acc",z);fillAcc();renderAcc()};
+if(a){
+var h=E("h3","","Mis reservas");h.style.margin="22px 0 6px";b.appendChild(h);
+var rs=a.r||[];
+if(!rs.length)b.appendChild(E("p","note","Todavía no tienes reservas guardadas."));
+rs.forEach(function(r){
+var row=E("div","row"),w=E("span"),d=E("button","del dl","Descargar PDF");
+d.type="button";d.onclick=function(){pdf(r)};
+row.appendChild(E("span","",r.code+" · "+r.camp+" · "+(r.tipo==="prereserva"?"Prereserva":r.pack)+(r.pruebas&&r.pruebas.length?" ("+r.pruebas.join(", ")+")":"")));
+w.appendChild(d);row.appendChild(w);b.appendChild(row)});
+var o=E("button","btn ghost","Borrar mi cuenta y mis datos");o.type="button";
+o.onclick=function(){if(!o.dataset.s){o.dataset.s="1";o.textContent="¿Seguro? Pulsa otra vez";return}try{localStorage.removeItem("mgv_acc")}catch(e){}renderAcc()};
+b.appendChild(o)}}
+function cdTxt(ms){
+var d=ms-Date.now();if(d<=0)return "¡Ya abre!";
+var s=Math.floor(d/1000),dd=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),x=s%60,z=function(n){return n<10?"0"+n:""+n};
+return (dd?dd+"d ":"")+z(h)+":"+z(m)+":"+z(x)}
+function cdBox(ms,pre){
+var p=E("p","cdb"),t=E("b");t.dataset.cd=ms;t.textContent=cdTxt(ms);
+p.appendChild(document.createTextNode(pre));p.appendChild(t);return p}
+function drawCd(){
+var h=$("hcd"),c=selC;h.textContent="";
+if(c&&c.abre&&Date.now()<c.abre&&(c.es==="soon"||c.early))h.appendChild(cdBox(c.abre,c.es==="soon"?"Abren las reservas en ":"Apertura general en "))}
+async function delChamp(c){
+var m=$("dmsg"),n=photos.filter(function(p){return p.champ===c.n});
+m.textContent="Eliminando…";
+try{
+for(var i=0;i<n.length;i++){
+await cf.doc(n[i].id).delete();
+if(assets&&n[i].assetId){try{await assets.delete(n[i].assetId)}catch(e){}}}
+await cc.doc(c.id).delete();
+if(ed&&ed.id===c.id)clearForm();
+m.textContent="Campeonato eliminado."}
+catch(e){m.textContent="No se pudo eliminar: "+((e&&(e.message||e.code))||"error desconocido")+". Abre la web con la cuenta propietaria o editora."}}
+function filtered(){
+var c=$("rfc").value,p=$("rfp").value,e=$("rfe").value;
+return reservas.filter(function(r){return(!c||r.camp===c)&&(!p||(r.pruebas||[]).indexOf(p)>=0)&&(!e||r.estado===e)})}
+function fillRF(){
+var a=$("rfc"),b=$("rfp"),va=a.value,vb=b.value,cs=[],ps=[],o;
+reservas.forEach(function(r){if(r.camp&&cs.indexOf(r.camp)<0)cs.push(r.camp)});
+champs.forEach(function(c){if(c.n&&cs.indexOf(c.n)<0)cs.push(c.n)});
+reservas.forEach(function(r){if(va&&r.camp!==va)return;(r.pruebas||[]).forEach(function(x){if(ps.indexOf(x)<0)ps.push(x)})});
+a.textContent="";o=E("option","","Todos los campeonatos");o.value="";a.appendChild(o);
+cs.forEach(function(n){var q=E("option","",n);q.value=n;a.appendChild(q)});a.value=va;
+b.textContent="";o=E("option","","Todas las pruebas");o.value="";b.appendChild(o);
+ps.forEach(function(n){var q=E("option","",n);q.value=n;b.appendChild(q)});b.value=vb}
+function drawAll(){fillRC();drawHero();drawTrack();drawPricing();drawGrid();drawFooter();drawCd();$("fbtn").textContent=selC&&selC.es==="soon"?"Enviar prereserva":"Confirmar reserva"}
+function fillFilter(){
+var v=gf.value;gf.textContent="";
+var o=E("option","","Todos");o.value="";gf.appendChild(o);
+champs.forEach(function(c){var p=E("option","",c.n);p.value=c.n;gf.appendChild(p)});gf.value=v}
+function clearForm(){
+ed=null;$("ctitle").textContent="Nuevo campeonato";$("cn").value="";$("cp").value="";$("cd").value="";$("cs").value="open";$("cfa").value="0";$("ab").value="";togAb();
+for(var i=0;i<3;i++)K.forEach(function(k){$("f"+i+k[0]).value=""})}
+function edit(c){
+clearForm();ed=c;$("ctitle").textContent="Editando: "+c.n;
+$("cn").value=c.n||"";$("cp").value=(c.pruebas||[]).join("\n");$("cd").value=c.d||"";$("cs").value=c.s||"open";$("cfa").value=String(c.fase||0);$("ab").value=c.abre?toLocal(c.abre):"";togAb();
+(c.fases||[]).forEach(function(f,i){K.forEach(function(k){$("f"+i+k[0]).value=f[k[0]]===""||f[k[0]]==null?"":f[k[0]]})});
+$("ctitle").scrollIntoView({behavior:"smooth"})}
+function refreshAdmin(){
+if(!admin)return;
+var l=$("clist");l.textContent="";
+if(!champs.length)l.appendChild(E("p","note","Aún no has creado ningún campeonato."));
+champs.forEach(function(c){
+var r=E("div","row"),w=E("span"),e=E("button","del dl","Editar"),x=E("button","del","Eliminar");
+e.type=x.type="button";e.style.margin=x.style.margin="0 0 0 6px";
+e.onclick=function(){edit(c)};
+var np=photos.filter(function(q){return q.champ===c.n}).length,pend=delPend===c.id;
+if(pend)x.textContent="Confirmar: eliminar"+(np?" con "+np+" fotos":"");
+x.onclick=function(){if(delPend!==c.id){delPend=c.id;refreshAdmin();return}delPend=null;delChamp(c)};
+r.appendChild(E("span","",c.n));
+if(pend){var k=E("button","del dl","Cancelar");k.type="button";k.style.margin="0 0 0 6px";k.onclick=function(){delPend=null;refreshAdmin()};w.appendChild(k)}
+w.appendChild(e);w.appendChild(x);r.appendChild(w);l.appendChild(r)});
+var u=$("uc"),v=u.value;u.textContent="";
+champs.forEach(function(c){var o=E("option","",c.n);o.value=c.n;u.appendChild(o)});if(v)u.value=v}
+function renderAdmin(){
+box.textContent="";
+if(!admin){
+box.innerHTML='<p style="margin:0 0 6px">Acceso solo para el creador de la web.</p><label class="f" for="lu">Usuario</label><input type="text" id="lu" autocomplete="username"><label class="f" for="lp">Contraseña</label><input type="password" id="lp" autocomplete="current-password"><button type="button" class="btn" id="lb">Entrar</button><p class="note" id="lm"></p>';
+var go=async function(){try{var r=await fetch("/api/login",{method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},body:JSON.stringify({user:$("lu").value,pass:$("lp").value})});var d=await r.json().catch(function(){return{}});if(!r.ok){$("lm").textContent=d.error||"Usuario o contraseña incorrectos.";return}location.hash="#admin";location.reload()}catch(e){$("lm").textContent="No se pudo conectar."}};
+$("lb").onclick=go;$("lp").onkeydown=function(e){if(e.key==="Enter")go()};return}
+var fh="";
+for(var i=0;i<3;i++){fh+='<p class="note" style="text-align:left;margin:6px 0 4px">Fase '+(i+1)+'</p><div class="fr">';
+K.forEach(function(k){fh+='<input type="text" inputmode="decimal" id="f'+i+k[0]+'" placeholder="'+k[1]+'" aria-label="Fase '+(i+1)+' '+k[1]+'">'});fh+="</div>"}
+box.innerHTML='<button type="button" class="btn ghost" id="lo" style="margin:0 0 14px">Cerrar sesión</button><h3 style="margin:0 0 6px">Campeonatos</h3><div id="clist"></div><p class="note" id="dmsg" role="status"></p><h4 id="ctitle" style="margin:20px 0 0">Nuevo campeonato</h4>'
++'<label class="f" for="cn">Nombre</label><input type="text" id="cn">'
++'<label class="f" for="cd">Fecha y lugar</label><input type="text" id="cd" placeholder="24 de octubre · Madrid">'
++'<label class="f" for="cp">Pruebas (una por línea)</label><textarea id="cp" rows="4"></textarea><div id="qp" class="prs" style="margin-top:8px"></div><label class="f" for="cs">Estado</label><select id="cs"><option value="open">Reservas abiertas</option><option value="soon">Abren pronto</option><option value="done">Celebrado (fotos disponibles)</option><option value="closed">Cerrado / agotado</option></select><div id="abw" style="display:none"><label class="f" for="ab">Abre el (fecha y hora)</label><input type="datetime-local" id="ab"><p class="note" style="text-align:left">Quien haga la prereserva podrá entrar 1 hora antes. A la hora indicada las reservas se abren solas.</p></div>'
++'<label class="f" for="cfa">Fase actual</label><select id="cfa"><option value="0">Fase 1</option><option value="1">Fase 2</option><option value="2">Fase 3</option></select>'
++'<label class="f">Precios y plazas que quedan, por fase (deja vacío lo que no uses)</label>'+fh
++'<button type="button" class="btn" id="csave">Guardar campeonato</button><button type="button" class="btn ghost" id="cnew">Nuevo / limpiar</button><p class="note" id="cmsg"></p>'
++'<h3 style="margin:26px 0 0">Subir fotos</h3><label class="f" for="uc">Campeonato</label><select id="uc"></select><label class="f" for="uf">Fotos</label><input type="file" id="uf" accept="image/*" multiple><button type="button" class="btn" id="ub">Subir fotos</button><p class="note" id="us"></p>'
++'<h3 style="margin:26px 0 6px">Reservas</h3><div class="fbar"><select id="rfc" aria-label="Campeonato"></select><select id="rfp" aria-label="Prueba"></select><select id="rfe" aria-label="Estado"><option value="">Todos los estados</option><option value="pendiente">Pendiente de pago</option><option value="pagada">Pagada</option><option value="prereserva">Prereserva</option></select></div><p class="note" id="rcount" style="text-align:left"></p><div id="rlist"></div><button type="button" class="btn ghost" id="rcsv">Exportar reservas (CSV)</button>'
++'<h3 style="margin:26px 0 0">Ajustes</h3><label class="f" for="ae">Email de contacto</label><input type="email" id="ae"><label class="f" for="ai">Instagram (sin @)</label><input type="text" id="ai"><label class="f" for="ap">Instrucciones de pago (Bizum, transferencia...)</label><textarea id="ap" rows="3"></textarea><button type="button" class="btn" id="asv">Guardar ajustes</button><p class="note" id="am"></p>';
+$("cnew").onclick=clearForm;
+$("cs").onchange=togAb;
+$("lo").onclick=async function(){await fetch("/api/login",{method:"DELETE",credentials:"same-origin"});location.hash="";location.reload()};
+$("rfc").onchange=function(){$("rfp").value="";drawRes()};$("rfp").onchange=drawRes;$("rfe").onchange=drawRes;
+["60 m","100 m","200 m","400 m","800 m","1500 m","3000 m","5000 m","10000 m","100 m vallas","110 m vallas","400 m vallas","3000 m obstáculos","Altura","Pértiga","Longitud","Triple","Peso","Disco","Martillo","Jabalina","4x100 m","4x400 m"].forEach(function(p){
+var b=E("button","badge","+ "+p);b.type="button";b.style.cursor="pointer";
+b.onclick=function(){var t=$("cp"),a=t.value.split("\n").map(function(x){return x.trim()}).filter(Boolean);if(a.indexOf(p)<0)a.push(p);t.value=a.join("\n")};
+$("qp").appendChild(b)});
+$("asv").onclick=async function(){
+try{await db.collection("ajustes").doc("web").set({email:$("ae").value.trim(),ig:$("ai").value.trim().replace(/^@/,""),pago:$("ap").value.trim()});$("am").textContent="Guardado."}
+catch(e){$("am").textContent="No se pudo guardar."}};
+$("rcsv").onclick=async function(){
+var rows=[["codigo","campeonato","nombre","sexo","email","telefono","instagram","pack","pruebas","estado"]];
+filtered().forEach(function(r){rows.push([r.code,r.camp,r.nombre,r.sexo,r.email,r.tel,r.ig,r.pack,(r.pruebas||[]).join(" / "),r.estado])});
+var csv=rows.map(function(x){return x.map(function(v){return '"'+String(v==null?"":v).replace(/"/g,'""')+'"'}).join(",")}).join("\n");
+try{if(dl)await dl.save({filename:"reservas.csv",data:"\ufeff"+csv})}catch(e){}};
+$("ae").value=aj.email||"";$("ai").value=aj.ig||"";$("ap").value=aj.pago||"";
+
+$("csave").onclick=async function(){
+var n=$("cn").value.trim(),m=$("cmsg"),bad=false,fases=[];
+if(!n){m.textContent="Pon un nombre al campeonato.";return}
+for(var i=0;i<3;i++){var f={},any=false;
+K.forEach(function(k){var v=$("f"+i+k[0]).value.trim().replace(",",".");
+if(v===""){f[k[0]]=""}else if(isNaN(Number(v))){bad=true}else{f[k[0]]=Number(v);any=true}});
+if(any)fases.push(f)}
+if(bad){m.textContent="Los precios y plazas deben ser números.";return}
+var data={n:n,abre:($("cs").value==="soon"&&$("ab").value)?new Date($("ab").value).getTime():0,pruebas:$("cp").value.split("\n").map(function(x){return x.trim()}).filter(Boolean),d:$("cd").value.trim(),s:$("cs").value,fase:Math.min(Number($("cfa").value),Math.max(fases.length-1,0)),fases:fases,ts:ed&&ed.ts||Date.now()};
+try{await (ed?cc.doc(ed.id):cc.doc()).set(data);clearForm();m.textContent="Guardado."}
+catch(e){m.textContent="No se pudo guardar."}};
+var ub=$("ub"),uf=$("uf"),us=$("us");
+ub.onclick=async function(){
+var fs=Array.prototype.slice.call(uf.files||[]),sel=$("uc");
+if(!sel.value){us.textContent="Crea primero un campeonato.";return}
+if(!fs.length){us.textContent="Selecciona al menos una foto.";return}
+ub.disabled=true;var okc=0;
+for(var i=0;i<fs.length;i++){
+us.textContent="Subiendo "+(i+1)+" de "+fs.length+"…";
+try{var r=await assets.upload(fs[i]);
+await cf.doc().set({assetId:r.id,url:r.url,champ:sel.value,name:fs[i].name,ts:Date.now()});okc++}
+catch(e){us.textContent="Error al subir "+fs[i].name+". Se detiene la subida.";break}}
+if(okc===fs.length){us.textContent="Listo: "+okc+" foto(s) subida(s).";uf.value=""}
+ub.disabled=false}}
+$("acclink").onclick=function(e){e.preventDefault();var z=$("cuenta");z.style.display="block";renderAcc();z.scrollIntoView({behavior:"smooth"})};
+$("flg").src=$("lg").src;
+if(location.hash==="#admin")$("admin").style.display="block";
+fillAcc();
+setInterval(function(){var g=applyEff();if(g!==lastSig){lastSig=g;pick();drawAll()}document.querySelectorAll("[data-cd]").forEach(function(e){e.textContent=cdTxt(+e.dataset.cd)})},1000);
+$("adminlink").onclick=function(e){e.preventDefault();var s=$("admin");s.style.display="block";s.scrollIntoView({behavior:"smooth"})};
+gf.onchange=drawGrid;
+$("pr").addEventListener("change",function(e){
+var t=e.target;
+if(t.dataset.c){if(t.checked)document.querySelectorAll("#pr input:not([data-c])").forEach(function(x){x.checked=false})}
+else if(t.checked){var cb=document.querySelector("#pr input[data-c]");if(cb)cb.checked=false;
+if(!(selC&&selC.es==="soon")&&document.querySelectorAll("#pr input:not([data-c]):checked").length>maxP())t.checked=false}
+calcTot()});
+$("f").addEventListener("submit",async function(ev){
+ev.preventDefault();
+var err=$("err"),ok=$("ok"),btn=$("fbtn");ok.style.display="none";
+var n=$("n").value.trim(),s=$("s").value,e=$("e").value.trim(),ch=[],key=null;
+function bad(m){err.textContent=m;err.style.display="block"}
+if(!selC||(selC.es!=="open"&&selC.es!=="soon"))return bad("Elige primero un campeonato en la lista de campeonatos.");
+var pre=selC.es==="soon",list=selC.pruebas||[];
+if(pre){ch=Array.prototype.map.call(document.querySelectorAll("#pr input:checked"),function(x){return x.value});
+if(list.length&&!ch.length)return bad("Elige al menos una prueba que te interese.")}
+else if(list.length){var r0=sel();if(!r0.ok)return bad("Elige al menos una prueba.");ch=r0.pruebas;key=r0.pruebas.length?null:"pc"}
+else{var pk=document.querySelector("input[name=p]:checked");if(!pk)return bad("Elige un pack de fotos.");key=pk.dataset.k}
+if(!n||!s||!/^\S+@\S+\.\S+$/.test(e))return bad("Completa nombre, sexo y un email válido.");
+if(!$("c").checked)return bad("Debes aceptar los términos y la política de privacidad.");
+err.style.display="none";btn.disabled=true;btn.textContent="Enviando…";
+try{
+var resp=await fetch("/api/reservar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campId:selC.id,nombre:n,sexo:s,email:e,tel:$("t").value.trim(),ig:$("i").value.trim(),pruebas:ch,key:key})});
+var d=await resp.json().catch(function(){return{}});
+if(!resp.ok){bad(d.error||"No se pudo enviar la reserva.");if(window.mgvReload)window.mgvReload();return}
+var r=d.reserva;r.emailOk=d.emailOk;
+if(pre)markPre(selC.id);
+if($("sv").checked){var A=acc()||{r:[]};A.p={n:n,s:s,e:e,t:r.tel,i:r.ig};A.r=A.r||[];A.r.unshift(r);lsSet("mgv_acc",A);renderAcc()}
+showRes(r);
+if(window.mgvReload)window.mgvReload()
+}catch(x){bad("No se pudo conectar con el servidor.")}
+finally{btn.disabled=false;btn.textContent=selC&&selC.es==="soon"?"Enviar prereserva":"Confirmar reserva"}});
+
+
+(async function(){
+if(typeof claude==="undefined"||!claude.use){msg("No se pudo cargar la web.");renderAdmin();drawAll();return}
+try{var u=await claude.use("user");admin=u?await u.canEdit():false}catch(e){}
+try{db=await claude.use("db")}catch(e){}
+try{assets=await claude.use("assets")}catch(e){}
+try{dl=await claude.use("downloads")}catch(e){}
+admin=admin&&!!db&&!!assets;
+renderAdmin();drawAll();
+if(!db){msg("Los campeonatos no están disponibles en esta sesión.");return}
+cc=db.collection("campeonatos");cf=db.collection("fotos");
+cc.orderBy("ts","desc").onSnapshot(function(s){
+champs=s.docs.map(function(x){var o=Object.assign({},x.data()||{});o.id=x.id;return o});lastSig=applyEff();pick();fillFilter();drawAll();refreshAdmin()},
+function(){msg("No se pudieron cargar los campeonatos.")});
+cf.orderBy("ts","desc").onSnapshot(function(s){
+photos=s.docs.map(function(x){var o=Object.assign({},x.data()||{});o.id=x.id;return o});drawGrid();refreshAdmin()},
+function(){msg("No se pudo cargar la galería.")});
+db.collection("ajustes").onSnapshot(function(s){aj={};s.docs.forEach(function(x){if(x.id==="web")aj=x.data()||{}});drawFooter();
+if(admin&&$("ae")){$("ae").value=aj.email||"";$("ai").value=aj.ig||"";$("ap").value=aj.pago||""}},function(){});
+if(admin)db.collection("reservas").orderBy("ts","desc").onSnapshot(function(s){
+reservas=s.docs.map(function(x){var o=Object.assign({},x.data()||{});o.id=x.id;return o});drawRes()},function(){})
+})()})();
+
+</script>
+</body>
+</html>
