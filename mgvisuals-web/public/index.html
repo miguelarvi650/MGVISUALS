@@ -150,6 +150,9 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 .herobg .lead{color:var(--text)}
 .herobg .meta{color:var(--text)}
 @media (max-width:760px){.veil{background:color-mix(in srgb,var(--bg) 68%,transparent)}}
+.card.click{cursor:pointer;transition:border-color .15s,box-shadow .2s,transform .15s}
+.card.click:hover,.card.click:focus-within{border-color:var(--text);box-shadow:0 0 0 1px var(--text),0 10px 26px color-mix(in srgb,var(--text) 20%,transparent);transform:translateY(-3px)}
+.card.click:hover .links a:first-child{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -278,6 +281,7 @@ else if(c.es==="done"){x=E("a","","Ver y descargar mis fotos →");x.href="/camp
 var np=photos.filter(function(q){return q.champ===c.n}).length,y=null;
 if(np&&c.es!=="done"){y=E("a","","Ver fotos ("+np+") →");y.href="/campeonato/"+c.id}
 if(x||y){var l=E("div","links");if(x)l.appendChild(x);if(y)l.appendChild(y);a.appendChild(l)}
+if(x){a.className+=" click";a.onclick=function(e){if(e.target.closest("a"))return;x.click()}}
 tr.appendChild(a)})}
 function drawPacks(){
 var pk=$("packs"),f=cur(selC);pk.textContent="";
