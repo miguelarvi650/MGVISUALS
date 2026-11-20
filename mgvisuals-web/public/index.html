@@ -142,11 +142,14 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 .herobg{position:relative;overflow:hidden;border-bottom:2px solid var(--text);background:var(--bg)}
 .mosaic{position:absolute;inset:0;display:flex;flex-wrap:wrap;gap:3px;align-content:stretch}
 .mosaic img{height:calc((100% - 6px) / 3);min-width:0;object-fit:cover;display:block}
-.veil{position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 92%,transparent) 0%,color-mix(in srgb,var(--bg) 84%,transparent) 42%,color-mix(in srgb,var(--bg) 52%,transparent) 100%)}
+.veil{position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 74%,transparent) 0%,color-mix(in srgb,var(--bg) 58%,transparent) 45%,color-mix(in srgb,var(--bg) 22%,transparent) 100%)}
+.herobg .eyebrow,.herobg .lead,.herobg .meta,.herobg .tag,.herobg h1,.herobg h2{text-shadow:0 0 10px var(--bg),0 0 3px var(--bg),0 0 22px var(--bg)}
+.herobg h1 em{text-shadow:none}
+.herobg .btn.ghost{background:var(--bg)}
 .herobg .hero{position:relative;z-index:1}
 .herobg .lead{color:var(--text)}
 .herobg .meta{color:var(--text)}
-@media (max-width:760px){.veil{background:color-mix(in srgb,var(--bg) 84%,transparent)}}
+@media (max-width:760px){.veil{background:color-mix(in srgb,var(--bg) 68%,transparent)}}
 </style>
 </head>
 <body>
