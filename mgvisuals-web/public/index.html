@@ -139,6 +139,14 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 .tabs button{flex:1;padding:10px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;font-weight:700;cursor:pointer;text-transform:uppercase;font-size:12px;letter-spacing:.08em;border-radius:0}
 .tabs button.on{background:var(--text);color:var(--bg)}
 .rsv{border:1px solid var(--line);padding:12px;margin-bottom:10px;background:var(--bg)}
+.herobg{position:relative;overflow:hidden;border-bottom:2px solid var(--text);background:var(--bg)}
+.mosaic{position:absolute;inset:0;display:flex;flex-wrap:wrap;gap:3px;align-content:stretch}
+.mosaic img{height:calc((100% - 6px) / 3);min-width:0;object-fit:cover;display:block}
+.veil{position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 92%,transparent) 0%,color-mix(in srgb,var(--bg) 84%,transparent) 42%,color-mix(in srgb,var(--bg) 52%,transparent) 100%)}
+.herobg .hero{position:relative;z-index:1}
+.herobg .lead{color:var(--text)}
+.herobg .meta{color:var(--text)}
+@media (max-width:760px){.veil{background:color-mix(in srgb,var(--bg) 84%,transparent)}}
 </style>
 </head>
 <body>
@@ -148,7 +156,9 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 </div></header>
 
 <main>
-<div class="wrap hero" data-view="home">
+<div class="herobg" data-view="home">
+<div class="mosaic" id="mosaico" aria-hidden="true"></div><div class="veil"></div>
+<div class="wrap hero">
 <div>
 <p class="eyebrow">Estudio de fotografía deportiva</p>
 <h1>Cada <em>meta</em> merece su foto.</h1>
@@ -158,6 +168,7 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 <p class="meta" id="hd" style="margin-bottom:6px"></p>
 <div id="hcd" style="margin-bottom:16px"></div>
 <a class="btn" href="#reservas">Reservar mis fotos</a><a class="btn ghost" href="#campeonatos">Ver campeonatos</a>
+</div>
 </div>
 </div>
 
@@ -647,5 +658,6 @@ reservas=s.docs.map(function(x){var o=Object.assign({},x.data()||{});o.id=x.id;r
 })()})();
 
 </script>
+<script src="/mosaico.js" defer></script>
 </body>
 </html>
