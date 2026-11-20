@@ -140,8 +140,9 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 .tabs button.on{background:var(--text);color:var(--bg)}
 .rsv{border:1px solid var(--line);padding:12px;margin-bottom:10px;background:var(--bg)}
 .herobg{position:relative;overflow:hidden;border-bottom:2px solid var(--text);background:var(--bg)}
-.mosaic{position:absolute;inset:0;display:flex;flex-wrap:wrap;gap:3px;align-content:stretch}
-.mosaic img{height:calc((100% - 6px) / 3);min-width:0;object-fit:cover;display:block}
+.mosaic{position:absolute;inset:0;display:flex;flex-direction:column;gap:3px}
+.mosaic .mr{display:flex;gap:3px;flex:1 1 0;min-height:0}
+.mosaic img{height:100%;min-width:0;flex-basis:0;object-fit:cover;display:block}
 .veil{position:absolute;inset:0;background:linear-gradient(90deg,color-mix(in srgb,var(--bg) 74%,transparent) 0%,color-mix(in srgb,var(--bg) 58%,transparent) 45%,color-mix(in srgb,var(--bg) 22%,transparent) 100%)}
 .herobg .eyebrow,.herobg .lead,.herobg .meta,.herobg .tag,.herobg h1,.herobg h2{text-shadow:0 0 10px var(--bg),0 0 3px var(--bg),0 0 22px var(--bg)}
 .herobg h1 em{text-shadow:none}
