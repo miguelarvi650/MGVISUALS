@@ -42,3 +42,6 @@ exports.nuevoCampeonato = (bcc, c, base) => send(process.env.GMAIL_USER, "Nuevo 
          "Ya puedes hacer la prereserva (sin pago)" + (c.abre ? " y entrarás 1 hora antes, desde las " + fmt(c.abre - 36e5) + "." : ".")]
       : ["Las reservas ya están abiertas."],
     ["", "Entra aquí:", base + "/#campeonatos", "", "Recibes este aviso porque activaste los avisos de tu categoría. Puedes desactivarlos en tu cuenta:", base + "/cuenta", "", "MG Visuals"]), bcc);
+exports.fotos = (r, aj) => send(r.email, "Tus fotos de " + r.camp + " ya están listas",
+  ["Hola " + r.nombre + ",", "", "Ya puedes ver y descargar las fotos de tu reserva:", ""].concat(resumen(r),
+  ["", "Abre tus fotos aquí:", r.enlace, "", "También las encontrarás entrando en tu cuenta de la web."], firma(aj)));

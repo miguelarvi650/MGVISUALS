@@ -2,6 +2,7 @@ const db = require("../lib/db");
 const mail = require("../lib/mail");
 const { isAdmin } = require("../lib/auth");
 const U = require("../lib/users");
+const GFOTOS = /^https:\/\/(photos\.app\.goo\.gl|photos\.google\.com)\/[^\s]{3,380}$/i;
 const IDRE = /^[a-z0-9-]{4,40}$/i;
 const BLOB = /^https:\/\/[a-z0-9-]+\.public\.blob\.vercel-storage\.com\//i;
 const clip = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
@@ -68,13 +69,27 @@ module.exports = async (req, res) => {
       case "reserva:update": {
         const r = await db.get("reservas", id);
         if (!r) return res.status(404).json({ error: "Reserva no encontrada" });
-        const est = clip(b.data && b.data.estado, 20);
-        if (!["pendiente", "pagada", "prereserva"].includes(est)) return bad("Estado no válido");
-        const was = r.estado; r.estado = est;
-        if (est === "pagada") r.pagadaTs = Date.now();
+        const d = b.data || {};
+        let emailOk = null, est = r.estado;
+        const was = r.estado;
+        if ("estado" in d) {
+          est = clip(d.estado, 20);
+          if (!["pendiente", "pagada", "prereserva"].includes(est)) return bad("Estado no válido");
+          r.estado = est;
+          if (est === "pagada") r.pagadaTs = Date.now();
+        }
+        let enlaceNuevo = false;
+        if ("enlace" in d) {
+          const u = clip(d.enlace, 400);
+          if (u && !GFOTOS.test(u)) return bad("Pega un enlace de Google Fotos (empieza por https://photos.app.goo.gl o https://photos.google.com).");
+          enlaceNuevo = !!u && u !== r.enlace;
+          if (u) { r.enlace = u; r.enlaceTs = Date.now(); } else { delete r.enlace; delete r.enlaceTs; }
+        }
         await db.put("reservas", id, r);
-        let emailOk = null;
-        if (est === "pagada" && was !== "pagada" && r.tipo !== "prereserva") {
+        if (enlaceNuevo && d.avisar) {
+          try { await mail.fotos(r, (await db.getKey("ajustes")) || {}); emailOk = true; } catch (e) { console.error("email fotos", e); emailOk = false; }
+        }
+        if ("estado" in d && est === "pagada" && was !== "pagada" && r.tipo !== "prereserva") {
           try { await mail.confirmada(r, (await db.getKey("ajustes")) || {}); emailOk = true; } catch (e) { console.error("email confirmada", e); emailOk = false; }
         }
         return res.status(200).json({ ok: true, emailOk });

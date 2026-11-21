@@ -154,6 +154,7 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 .card.click{cursor:pointer;transition:border-color .15s,box-shadow .2s,transform .15s}
 .card.click:hover,.card.click:focus-within{border-color:var(--text);box-shadow:0 0 0 1px var(--text),0 10px 26px color-mix(in srgb,var(--text) 20%,transparent);transform:translateY(-3px)}
 .card.click:hover .links a:first-child{text-decoration:underline}
+.rsv input[type=text]{margin-top:8px}
 </style>
 </head>
 <body>
@@ -213,12 +214,12 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 
 <section id="galeria" data-view="gal"><div class="wrap">
 <a class="back" href="/#campeonatos">← Volver a los campeonatos</a>
-<p class="eyebrow">Fotos del campeonato</p>
+<p class="eyebrow">Mis fotos</p>
 <h2 id="gt">Galería</h2>
 <p class="meta" id="gd"></p>
 <div class="fbar" hidden><label for="gf" class="sub" style="margin:0">Filtrar por campeonato</label><select id="gf"><option value="">Todos</option></select></div>
-<div class="grid" id="grid"></div>
-<p class="sub" id="gmsg" style="margin-top:16px"></p>
+<div id="gbox"></div>
+<div class="grid" id="grid" hidden></div><p class="sub" id="gmsg" hidden></p>
 </div></section>
 
 <section id="cuenta" data-view="cuenta"><div class="wrap"><a class="back" href="/">← Volver a la web</a><div class="center" style="margin:0 0 20px"><p class="eyebrow">Mi cuenta</p><h2>Tus datos y reservas</h2></div><div class="adm" id="accbox"></div></div></section>
@@ -278,9 +279,9 @@ var a=E("article","card "+c.es+(selC&&selC.id===c.id?" sel":"")),x=null;
 a.appendChild(E("span","tag "+c.es,(ST[c.es]||"")+(c.early?" · acceso anticipado":"")));a.appendChild(E("h3","",c.n));a.appendChild(E("p","meta",c.d||"\u00a0"));if(c.es==="soon"&&c.abre){a.appendChild(E("p","meta","Abre el "+fmt(c.abre)));a.appendChild(cdBox(c.abre,"Faltan "))}else if(c.early){a.appendChild(cdBox(c.abre,"Apertura general en "))}
 if(c.cats&&c.cats.length)a.appendChild(E("p","meta","Categoría: "+c.cats.join(" · ")));
 if(c.es==="open"||c.es==="soon"){x=E("a","",c.es==="open"?"Reservar mis fotos →":"Prereservar →");x.href="#reservas";x.onclick=function(){selC=c;drawAll()}}
-else if(c.es==="done"){x=E("a","","Ver y descargar mis fotos →");x.href="/campeonato/"+c.id}
-var np=photos.filter(function(q){return q.champ===c.n}).length,y=null;
-if(np&&c.es!=="done"){y=E("a","","Ver fotos ("+np+") →");y.href="/campeonato/"+c.id}
+else if(c.es==="done"){x=E("a","","Ver mis fotos →");x.href="/campeonato/"+c.id}
+var y=null;
+if(c.es!=="done"&&ME&&(ME.reservas||[]).some(function(r){return r.campId===c.id&&r.enlace})){y=E("a","","Ver mis fotos →");y.href="/campeonato/"+c.id}
 if(x||y){var l=E("div","links");if(x)l.appendChild(x);if(y)l.appendChild(y);a.appendChild(l)}
 if(x){a.className+=" click";a.onclick=function(e){if(e.target.closest("a"))return;x.click()}}
 tr.appendChild(a)})}
@@ -316,19 +317,57 @@ catch(e){msg("No se pudo descargar la foto.")}}
 async function remove(d){
 try{await cf.doc(d.id).delete();if(assets&&d.assetId){await assets.delete(d.assetId)}}
 catch(e){msg("No se pudo eliminar la foto.")}}
+var galQ="",galDirty=false,galAv=true,galMsg={};
+function inGal(r,c){return r.tipo!=="prereserva"&&(r.campId?r.campId===c.id:r.camp===c.n)}
+function resTxt(r){return r.pack+(r.pruebas&&r.pruebas.length?" · "+r.pruebas.join(", "):"")}
 function drawGrid(){
-var v=gf.value;grid.textContent="";if(view==="gal"&&!v){msg(champs.length?"Este campeonato no existe.":"Cargando…");return}
-if(!db)return;
-var list=photos.filter(function(d){return !v||d.champ===v});
-msg(list.length?"":"Todavía no hay fotos subidas en este campeonato.");
-list.forEach(function(d){
-var f=E("figure"),a=E("a"),im=new Image();
-a.href=d.url;a.target="_blank";a.rel="noopener";im.src=d.url;im.loading="lazy";im.alt=d.name||"Foto";
-a.appendChild(im);f.appendChild(a);f.appendChild(E("figcaption","",view==="gal"?(d.name||""):(d.champ||"")));
-var b=E("button","del dl","Descargar");b.type="button";b.onclick=function(){save(d)};f.appendChild(b);
-if(admin){var x=E("button","del","Eliminar");x.type="button";
-x.onclick=function(){if(!x.dataset.s){x.dataset.s="1";x.textContent="¿Seguro? Pulsa otra vez";return}remove(d)};f.appendChild(x)}
-grid.appendChild(f)})}
+if(view!=="gal")return;
+var box=$("gbox"),c=null;champs.forEach(function(x){if(x.id===galId)c=x});
+if(!c){box.textContent="";return}
+if(admin)return drawGalAdmin(box,c);
+box.textContent="";
+if(!ME){
+box.appendChild(E("p","sub","Inicia sesión para ver tus fotos de este campeonato."));
+var l=E("a","btn","Entrar o crear cuenta");l.href="/cuenta";box.appendChild(l);return}
+var mine=(ME.reservas||[]).filter(function(r){return inGal(r,c)});
+if(!mine.length){box.appendChild(E("p","sub","No hay ninguna reserva de este campeonato en tu cuenta ("+ME.user.email+"). Si reservaste con otro correo, entra con ese correo."));return}
+mine.forEach(function(r){
+var d=E("div","rsv");
+d.appendChild(E("b","",r.code));d.appendChild(E("div","meta",resTxt(r)));
+if(r.enlace){var a=E("a","btn","Abrir mis fotos en Google Fotos →");a.href=r.enlace;a.target="_blank";a.rel="noopener noreferrer";a.style.marginTop="12px";d.appendChild(a)}
+else d.appendChild(E("p","note","Tus fotos todavía no están disponibles. Te avisaremos por correo cuando estén listas."));
+box.appendChild(d)})}
+function drawGalAdmin(box,c){
+if(galDirty&&box.firstChild)return;
+box.textContent="";
+var list=reservas.filter(function(r){return inGal(r,c)}).sort(function(a,b){return b.ts-a.ts});
+var con=list.filter(function(r){return r.enlace}).length;
+box.appendChild(E("p","sub",list.length?con+" de "+list.length+" reservas con enlace de fotos. Pega el enlace de Google Fotos de cada cliente; solo él lo verá en su cuenta.":"Todavía no hay reservas de este campeonato."));
+if(!list.length)return;
+var bar=E("div","fbar"),q=E("input");q.type="text";q.placeholder="Buscar por nombre, correo o código";q.value=galQ;q.style.maxWidth="360px";q.setAttribute("aria-label","Buscar reserva");
+var av=E("label","check"),cb=E("input");cb.type="checkbox";cb.checked=galAv;cb.onchange=function(){galAv=cb.checked};
+av.appendChild(cb);av.appendChild(E("span","","Avisar al cliente por correo al guardar un enlace nuevo"));
+bar.appendChild(q);box.appendChild(bar);box.appendChild(av);
+var rows=E("div");box.appendChild(rows);
+list.forEach(function(r){
+var row=E("div","rsv");row.dataset.q=(r.nombre+" "+r.email+" "+r.code).toLowerCase();
+row.appendChild(E("b","",r.nombre+" · "+r.code));
+row.appendChild(E("div","meta",r.email+" · "+resTxt(r)+" · "+(r.estado==="pagada"?"Pagada":"Pendiente de pago")));
+var inp=E("input");inp.type="text";inp.placeholder="https://photos.app.goo.gl/…";inp.value=r.enlace||"";inp.setAttribute("aria-label","Enlace de Google Fotos de "+r.nombre);inp.oninput=function(){galDirty=true};
+row.appendChild(inp);
+var sv=E("button","btn","Guardar");sv.type="button";sv.style.cssText="margin:8px 8px 0 0;padding:10px 20px";
+sv.onclick=async function(){
+sv.disabled=true;
+try{var res=await db.collection("reservas").doc(r.id).update({enlace:inp.value.trim(),avisar:galAv});
+galMsg[r.id]=!inp.value.trim()?"Enlace quitado.":(res&&res.emailOk===true?"Guardado y cliente avisado por correo.":(res&&res.emailOk===false?"Guardado, pero no se pudo enviar el correo.":"Guardado."));
+galDirty=false;drawGrid()}
+catch(e){galMsg[r.id]="Error: "+e.message;sv.disabled=false;row.querySelector(".gm").textContent=galMsg[r.id]}};
+row.appendChild(sv);
+if(r.enlace){var op=E("a","btn ghost","Abrir");op.href=r.enlace;op.target="_blank";op.rel="noopener noreferrer";op.style.cssText="margin:8px 0 0;padding:10px 20px";row.appendChild(op)}
+var m=E("p","note gm",galMsg[r.id]||"");m.style.textAlign="left";row.appendChild(m);
+rows.appendChild(row)});
+q.oninput=function(){galQ=q.value;var t=q.value.trim().toLowerCase();Array.prototype.forEach.call(rows.children,function(x){x.hidden=!!t&&x.dataset.q.indexOf(t)<0})};
+if(galQ)q.oninput()}
 function maxP(){var f=cur(selC)||{},m=0;["p1","p2","p3"].forEach(function(k,i){if(f[k]!==""&&f[k]!=null)m=i+1});return m}
 function sel(){
 var q=document.querySelectorAll("#pr input:not([data-c]):checked"),cb=document.querySelector("#pr input[data-c]:checked"),f=cur(selC)||{};
@@ -470,6 +509,7 @@ var d=E("div","rsv");
 d.appendChild(E("b","",r.code+" · "+(EST[r.estado]||r.estado)));
 d.appendChild(E("div","meta",r.camp+(r.fecha?" · "+r.fecha:"")));
 d.appendChild(E("div","meta",(r.tipo==="prereserva"?"Prereserva":r.pack)+(r.pruebas&&r.pruebas.length?" · "+r.pruebas.join(", "):"")));
+if(r.enlace){var ph=E("a","btn","Ver mis fotos en Google Fotos");ph.href=r.enlace;ph.target="_blank";ph.rel="noopener noreferrer";ph.style.cssText="margin-top:10px;display:block;text-align:center";d.appendChild(ph)}
 var x=E("button","btn ghost","Descargar justificante (PDF)");x.type="button";x.style.marginTop="10px";x.onclick=function(){pdf(r)};d.appendChild(x);p.appendChild(d)});
 }else{
 p.innerHTML='<label class="f" for="d-n">Nombre</label><input type="text" id="d-n"><label class="f" for="d-e">Email</label><input type="email" id="d-e" disabled><label class="f" for="d-s">Sexo</label><select id="d-s"><option value="">Sexo</option><option>Masculino (M)</option><option>Femenino (W)</option></select><label class="f" for="d-c">Categoría</label><select id="d-c">'+catOpts()+'</select><label class="f" for="d-t">Teléfono</label><input type="tel" id="d-t"><label class="f" for="d-i">Instagram</label><input type="text" id="d-i"><label class="check"><input type="checkbox" id="d-a"><span>Quiero recibir avisos por correo de nuevos campeonatos de mi categoría.</span></label><button type="button" class="btn" id="d-b">Guardar cambios</button><h3 style="margin:26px 0 0">Cambiar contraseña</h3><label class="f" for="c-a">Contraseña actual</label><input type="password" id="c-a" autocomplete="current-password"><label class="f" for="c-n">Contraseña nueva</label><input type="password" id="c-n" autocomplete="new-password"><button type="button" class="btn ghost" id="c-b">Cambiar contraseña</button><h3 style="margin:26px 0 0">Eliminar cuenta</h3><p class="note" style="text-align:left;margin:4px 0 0">Se borran tus datos de acceso. Tus reservas se conservan.</p><label class="f" for="x-p">Contraseña</label><input type="password" id="x-p" autocomplete="current-password"><button type="button" class="btn ghost" id="x-b" style="border-color:var(--bad);color:var(--bad)">Eliminar mi cuenta</button>';
@@ -515,7 +555,7 @@ if(view!=="gal")return;
 var c=null;champs.forEach(function(x){if(x.id===galId)c=x});
 $("gt").textContent=c?c.n:(champs.length?"Campeonato no encontrado":"Cargando…");
 $("gd").textContent=c?(c.d||""):"";
-if(c){document.title=c.n+" · Fotos · MG Visuals";gf.value=c.n}}
+if(c){document.title=c.n+" · Fotos · MG Visuals"}}
 function drawAll(){fillRC();drawHero();drawTrack();drawPricing();setGal();drawGrid();drawFooter();drawCd();$("fbtn").textContent=selC&&selC.es==="soon"?"Enviar prereserva":"Confirmar reserva"}
 function fillFilter(){
 var v=gf.value;gf.textContent="";
@@ -544,8 +584,7 @@ r.appendChild(E("span","",c.n));
 if(pend){var k=E("button","del dl","Cancelar");k.type="button";k.style.margin="0 0 0 6px";k.onclick=function(){delPend=null;refreshAdmin()};w.appendChild(k)}
 var gl=E("a","del dl","Galería");gl.href="/campeonato/"+c.id;gl.style.cssText="display:inline-block;margin:0 0 0 6px;text-decoration:none";
 w.appendChild(gl);w.appendChild(e);w.appendChild(x);r.appendChild(w);l.appendChild(r)});
-var u=$("uc"),v=u.value;u.textContent="";
-champs.forEach(function(c){var o=E("option","",c.n);o.value=c.n;u.appendChild(o)});if(v)u.value=v}
+}
 function renderAdmin(){
 box.textContent="";
 if(!admin){
@@ -562,7 +601,6 @@ box.innerHTML='<button type="button" class="btn ghost" id="lo" style="margin:0 0
 +'<label class="f" for="cfa">Fase actual</label><select id="cfa"><option value="0">Fase 1</option><option value="1">Fase 2</option><option value="2">Fase 3</option></select>'
 +'<label class="f">Precios y plazas que quedan, por fase (deja vacío lo que no uses)</label>'+fh
 +'<button type="button" class="btn" id="csave">Guardar campeonato</button><button type="button" class="btn ghost" id="cnew">Nuevo / limpiar</button><p class="note" id="cmsg"></p>'
-+'<h3 style="margin:26px 0 0">Subir fotos</h3><label class="f" for="uc">Campeonato</label><select id="uc"></select><label class="f" for="uf">Fotos</label><input type="file" id="uf" accept="image/*" multiple><button type="button" class="btn" id="ub">Subir fotos</button><p class="note" id="us"></p>'
 +'<h3 style="margin:26px 0 6px">Reservas</h3><div class="fbar"><select id="rfc" aria-label="Campeonato"></select><select id="rfp" aria-label="Prueba"></select><select id="rfe" aria-label="Estado"><option value="">Todos los estados</option><option value="pendiente">Pendiente de pago</option><option value="pagada">Pagada</option><option value="prereserva">Prereserva</option></select></div><p class="note" id="rcount" style="text-align:left"></p><div id="rlist"></div><button type="button" class="btn ghost" id="rcsv">Exportar reservas (CSV)</button>'
 +'<h3 style="margin:26px 0 0">Ajustes</h3><label class="f" for="ae">Email de contacto</label><input type="email" id="ae"><label class="f" for="ai">Instagram (sin @)</label><input type="text" id="ai"><label class="f" for="ap">Instrucciones de pago (Bizum, transferencia...)</label><textarea id="ap" rows="3"></textarea><button type="button" class="btn" id="asv">Guardar ajustes</button><p class="note" id="am"></p>';
 $("cnew").onclick=clearForm;
@@ -594,19 +632,7 @@ if(bad){m.textContent="Los precios y plazas deben ser números.";return}
 var data={n:n,cats:Array.prototype.map.call(document.querySelectorAll("#ccats input:checked"),function(x){return x.value}),avisar:$("cav").checked,abre:($("cs").value==="soon"&&$("ab").value)?new Date($("ab").value).getTime():0,pruebas:$("cp").value.split("\n").map(function(x){return x.trim()}).filter(Boolean),d:$("cd").value.trim(),s:$("cs").value,fase:Math.min(Number($("cfa").value),Math.max(fases.length-1,0)),fases:fases,ts:ed&&ed.ts||Date.now()};
 try{var rr=await (ed?cc.doc(ed.id):cc.doc()).set(data);clearForm();m.textContent="Guardado."+(rr&&rr.avisoError?" Pero no se pudo enviar el aviso por correo.":(rr&&rr.avisados!=null?" Aviso enviado a "+rr.avisados+" atleta(s).":""))}
 catch(e){m.textContent="No se pudo guardar."}};
-var ub=$("ub"),uf=$("uf"),us=$("us");
-ub.onclick=async function(){
-var fs=Array.prototype.slice.call(uf.files||[]),sel=$("uc");
-if(!sel.value){us.textContent="Crea primero un campeonato.";return}
-if(!fs.length){us.textContent="Selecciona al menos una foto.";return}
-ub.disabled=true;var okc=0;
-for(var i=0;i<fs.length;i++){
-us.textContent="Subiendo "+(i+1)+" de "+fs.length+"…";
-try{var r=await assets.upload(fs[i]);
-await cf.doc().set({assetId:r.id,url:r.url,champ:sel.value,name:fs[i].name,ts:Date.now()});okc++}
-catch(e){us.textContent="Error al subir "+fs[i].name+". Se detiene la subida.";break}}
-if(okc===fs.length){us.textContent="Listo: "+okc+" foto(s) subida(s).";uf.value=""}
-ub.disabled=false}}
+}
 $("flg").src=$("lg").src;
 loadMe();
 setInterval(function(){var g=applyEff();if(g!==lastSig){lastSig=g;pick();drawAll()}document.querySelectorAll("[data-cd]").forEach(function(e){e.textContent=cdTxt(+e.dataset.cd)})},1000);
@@ -662,7 +688,7 @@ function(){msg("No se pudo cargar la galería.")});
 db.collection("ajustes").onSnapshot(function(s){aj={};s.docs.forEach(function(x){if(x.id==="web")aj=x.data()||{}});drawFooter();
 if(admin&&$("ae")){$("ae").value=aj.email||"";$("ai").value=aj.ig||"";$("ap").value=aj.pago||""}},function(){});
 if(admin)db.collection("reservas").orderBy("ts","desc").onSnapshot(function(s){
-reservas=s.docs.map(function(x){var o=Object.assign({},x.data()||{});o.id=x.id;return o});drawRes()},function(){})
+reservas=s.docs.map(function(x){var o=Object.assign({},x.data()||{});o.id=x.id;return o});drawRes();drawGrid()},function(){})
 })()})();
 
 </script>
