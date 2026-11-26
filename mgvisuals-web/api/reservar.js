@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const db = require("../lib/db");
 const mail = require("../lib/mail");
+const S = require("../lib/stripe");
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const clip = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
 const num = (v) => (v === "" || v == null || isNaN(Number(v)) ? null : Number(v));
@@ -72,8 +73,10 @@ module.exports = async (req, res) => {
     console.error(e);
     return res.status(500).json({ error: "Error del servidor. Inténtalo de nuevo." });
   }
+  const site = process.env.SITE_URL || "https://" + req.headers.host;
+  const pagoUrl = r.tipo === "reserva" && Number(r.precio) > 0 && S.enabled() ? S.payUrl(site, r.code) : null;
   let emailOk = true;
-  try { await (r.tipo === "prereserva" ? mail.prereserva(r, aj) : mail.recibida(r, aj)); } catch (e) { emailOk = false; console.error("email cliente", e); }
+  try { await (r.tipo === "prereserva" ? mail.prereserva(r, aj) : mail.recibida(r, aj, pagoUrl)); } catch (e) { emailOk = false; console.error("email cliente", e); }
   try { await mail.aviso(r); } catch (e) { console.error("email aviso", e); }
-  res.status(200).json({ reserva: r, emailOk });
+  res.status(200).json({ reserva: r, emailOk, pagoUrl });
 };

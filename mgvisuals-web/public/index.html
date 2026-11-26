@@ -155,6 +155,7 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 .card.click:hover,.card.click:focus-within{border-color:var(--text);box-shadow:0 0 0 1px var(--text),0 10px 26px color-mix(in srgb,var(--text) 20%,transparent);transform:translateY(-3px)}
 .card.click:hover .links a:first-child{text-decoration:underline}
 .rsv input[type=text]{margin-top:8px}
+#pagonote{background:var(--text);color:var(--bg);text-align:center;padding:12px 20px;font-weight:700}
 </style>
 </head>
 <body>
@@ -163,6 +164,7 @@ h1 em,h2 em{font-style:italic;background:var(--text);color:var(--bg);padding:0 .
 <nav><a href="/#campeonatos">Calendario</a><a href="/#precios">Tarifas</a><a href="/#reservas">Reserva</a><a href="/cuenta" id="acclink">Mi cuenta</a></nav>
 </div></header>
 
+<div id="pagonote" hidden></div>
 <main>
 <div class="herobg" data-view="home">
 <div class="mosaic" id="mosaico" aria-hidden="true"></div><div class="veil"></div>
@@ -257,6 +259,10 @@ var tr=$("track"),gm=$("gmsg"),grid=$("grid"),gf=$("gf"),box=$("admbox");
 var path=location.pathname.replace(/\/+$/,"")||"/",view="home",galId=null;
 if(path==="/cuenta")view="cuenta";else if(path==="/admin")view="admin";else if(path.indexOf("/campeonato/")===0){view="gal";try{galId=decodeURIComponent(path.slice(12))}catch(e){galId=path.slice(12)}}
 document.querySelectorAll("[data-view]").forEach(function(e){e.hidden=e.dataset.view!==view});
+if(view==="home"){var pq=new URLSearchParams(location.search).get("pago");
+if(pq){var pn=$("pagonote");pn.hidden=false;
+pn.textContent=pq==="ok"?"¡Gracias! Hemos recibido tu pago. En unos instantes te llegará el correo de confirmación de tu reserva.":(pq==="cancelado"?"Pago cancelado. Tu reserva sigue pendiente: puedes pagar con el enlace del correo o desde Mi cuenta.":"No se pudo abrir el pago. Inténtalo de nuevo desde el enlace del correo o desde Mi cuenta.");
+history.replaceState(null,"","/")}}
 document.title={home:"MGVisuals — Fotografía deportiva",cuenta:"Mi cuenta · MG Visuals",admin:"Acceso creador · MG Visuals",gal:"Fotos · MG Visuals"}[view];
 var ST={open:"Reservas abiertas",soon:"Próximamente",done:"Fotos disponibles",closed:"Agotado"};
 var K=[["p1","1 prueba €"],["p2","2 pruebas €"],["p3","3 pruebas €"],["pc","Combinadas €"],["q1","Plazas indiv."],["qc","Plazas comb."]];
@@ -412,6 +418,7 @@ ok.appendChild(E("div","",(r.tipo==="prereserva"?"Prereserva registrada":"Reserv
 var d=E("div","note","Campeonato: "+r.camp+" · "+r.pack+(r.pruebas.length?" · Pruebas: "+r.pruebas.join(", "):"")+(r.tipo==="prereserva"?". Sin pago ahora."+(r.abre?" Podrás reservar desde "+fmt(r.abre-3600000)+" (1 hora antes de la apertura, el "+fmt(r.abre)+"), desde este mismo dispositivo.":" Te avisaremos cuando abran las reservas."):". Estado: pendiente de pago."));
 d.style.color="var(--text)";ok.appendChild(d);
 if(aj.pago&&r.tipo!=="prereserva"){var p=E("div","note","Pago: "+aj.pago);p.style.color="var(--text)";p.style.whiteSpace="pre-wrap";ok.appendChild(p)}
+if(r.pagoUrl){var pg=E("a","btn","Pagar ahora con tarjeta →");pg.href=r.pagoUrl;pg.style.cssText="margin-top:12px;display:block;text-align:center";ok.appendChild(pg)}
 var b=E("button","btn","Descargar justificante (PDF)");b.type="button";b.style.marginTop="12px";b.onclick=function(){pdf(r)};ok.appendChild(b);
 var em=E("div","note",r.emailOk===false?"No hemos podido enviar el correo de confirmación. Guarda tu justificante.":"Te hemos enviado un correo a "+r.email+".");em.style.color="var(--text)";ok.appendChild(em);
 ok.style.display="block";ok.scrollIntoView({behavior:"smooth",block:"center"});pdf(r)}
@@ -425,7 +432,7 @@ var row=E("div","row"),w=E("span"),a=E("button","del dl",r.estado==="pagada"?"Ma
 a.type=x.type="button";a.style.margin=x.style.margin="0 0 0 6px";
 a.onclick=function(){db.collection("reservas").doc(r.id).update({estado:r.estado==="pagada"?"pendiente":"pagada"}).then(function(x){$("rcount").textContent=r.estado==="pagada"?"Reserva marcada como pendiente.":(x&&x.emailOk===false?"Marcada como pagada, pero no se pudo enviar el correo.":"Reserva pagada: correo de confirmación enviado a "+r.email+".")}).catch(function(e){$("rcount").textContent="No se pudo actualizar: "+e.message})};
 x.onclick=function(){if(!x.dataset.s){x.dataset.s="1";x.textContent="¿Seguro?";return}db.collection("reservas").doc(r.id).delete().catch(function(){})};
-row.appendChild(E("span","",r.code+" · "+r.nombre+" · "+r.camp+" · "+r.pack+(r.pruebas&&r.pruebas.length?" ("+r.pruebas.join(", ")+")":"")+" · "+r.estado));
+row.appendChild(E("span","",r.code+" · "+r.nombre+" · "+r.camp+" · "+r.pack+(r.pruebas&&r.pruebas.length?" ("+r.pruebas.join(", ")+")":"")+" · "+r.estado+(r.pagadoPor==="stripe"?" (Stripe)":"")+(r.stripeAviso?" ⚠ "+r.stripeAviso:"")));
 w.appendChild(a);w.appendChild(x);row.appendChild(w);l.appendChild(row)})}
 function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
@@ -509,6 +516,7 @@ var d=E("div","rsv");
 d.appendChild(E("b","",r.code+" · "+(EST[r.estado]||r.estado)));
 d.appendChild(E("div","meta",r.camp+(r.fecha?" · "+r.fecha:"")));
 d.appendChild(E("div","meta",(r.tipo==="prereserva"?"Prereserva":r.pack)+(r.pruebas&&r.pruebas.length?" · "+r.pruebas.join(", "):"")));
+if(r.pagoUrl){var pp=E("a","btn","Pagar ahora con tarjeta");pp.href=r.pagoUrl;pp.style.cssText="margin-top:10px;display:block;text-align:center";d.appendChild(pp)}
 if(r.enlace){var ph=E("a","btn","Ver mis fotos en Google Fotos");ph.href=r.enlace;ph.target="_blank";ph.rel="noopener noreferrer";ph.style.cssText="margin-top:10px;display:block;text-align:center";d.appendChild(ph)}
 var x=E("button","btn ghost","Descargar justificante (PDF)");x.type="button";x.style.marginTop="10px";x.onclick=function(){pdf(r)};d.appendChild(x);p.appendChild(d)});
 }else{
@@ -661,7 +669,7 @@ try{
 var resp=await fetch("/api/reservar",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({campId:selC.id,nombre:n,sexo:s,email:e,tel:$("t").value.trim(),ig:$("i").value.trim(),pruebas:ch,key:key})});
 var d=await resp.json().catch(function(){return{}});
 if(!resp.ok){bad(d.error||"No se pudo enviar la reserva.");if(window.mgvReload)window.mgvReload();return}
-var r=d.reserva;r.emailOk=d.emailOk;
+var r=d.reserva;r.emailOk=d.emailOk;r.pagoUrl=d.pagoUrl;
 if(pre)markPre(selC.id);
 showRes(r);
 if(window.mgvReload)window.mgvReload()

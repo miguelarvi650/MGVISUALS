@@ -17,9 +17,9 @@ const resumen = (r) => ["Código: " + r.code, "Campeonato: " + r.camp + (r.fecha
   .concat(r.pruebas && r.pruebas.length ? ["Pruebas: " + r.pruebas.join(", ")] : []);
 const fmt = (ms) => new Date(ms).toLocaleString("es-ES", { timeZone: "Europe/Madrid", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" });
 
-exports.recibida = (r, aj) => send(r.email, "Hemos recibido tu reserva " + r.code,
+exports.recibida = (r, aj, payUrl) => send(r.email, "Hemos recibido tu reserva " + r.code,
   ["Hola " + r.nombre + ",", "", "Hemos recibido el formulario de tu reserva.", ""].concat(resumen(r),
-  ["", "Estado: pendiente de pago."], pagoLines(aj), ["", "Cuando confirmemos tu pago te enviaremos otro correo."], firma(aj)));
+  ["", "Estado: pendiente de pago."], payUrl ? ["", "Paga ahora con tarjeta:", payUrl] : [], pagoLines(aj), ["", "Cuando confirmemos tu pago te enviaremos otro correo."], firma(aj)));
 exports.prereserva = (r, aj) => send(r.email, "Prereserva recibida " + r.code,
   ["Hola " + r.nombre + ",", "", "Hemos registrado tu prereserva (sin pago).", ""].concat(resumen(r),
   r.abre ? ["", "Podrás reservar desde el " + fmt(r.abre - 36e5) + " (1 hora antes de la apertura general, el " + fmt(r.abre) + ")."]

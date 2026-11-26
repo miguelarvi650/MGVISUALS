@@ -2,6 +2,7 @@ const db = require("../lib/db");
 const mail = require("../lib/mail");
 const A = require("../lib/auth");
 const U = require("../lib/users");
+const S = require("../lib/stripe");
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const clip = (v, n) => String(v == null ? "" : v).trim().slice(0, n);
 const base = (req) => process.env.SITE_URL || "https://" + req.headers.host;
@@ -28,7 +29,9 @@ module.exports = async (req, res) => {
       const u = await sessionUser(req);
       if (!u) return res.status(200).json({ user: null });
       const rs = (await db.all("reservas")).filter((r) => U.norm(r.email) === u.id).sort((a, b) => b.ts - a.ts);
-      return res.status(200).json({ user: U.pub(u), reservas: rs, pre: rs.filter((r) => r.tipo === "prereserva" && r.campId).map((r) => r.campId) });
+      const site = base(req);
+      const rsp = rs.map((r) => (S.enabled() && r.tipo === "reserva" && r.estado === "pendiente" && Number(r.precio) > 0 ? { ...r, pagoUrl: S.payUrl(site, r.code) } : r));
+      return res.status(200).json({ user: U.pub(u), reservas: rsp, pre: rs.filter((r) => r.tipo === "prereserva" && r.campId).map((r) => r.campId) });
     }
     if (req.method !== "POST") return res.status(405).json({ error: "Método no permitido" });
     if (!String(req.headers["content-type"] || "").includes("application/json")) return res.status(415).json({ error: "Formato no válido" });
